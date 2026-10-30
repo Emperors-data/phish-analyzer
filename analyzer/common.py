@@ -1,0 +1,5 @@
+def make_finding(category, points, message):
+    return {'category': category, 'points': points, 'message': message}
+    
+def defang(text):
+    return text.replace('http', 'hxxp').replace('.', '[.]')
