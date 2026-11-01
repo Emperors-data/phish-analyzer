@@ -1,0 +1,22 @@
+From: Accounts <accounts@example.com>
+To: you@example.com
+Subject: Invoice attached
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============6974731263918077007=="
+
+--===============6974731263918077007==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Please see the attached invoice.
+
+--===============6974731263918077007==
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="invoice.pdf"
+MIME-Version: 1.0
+
+TVoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAA
+
+--===============6974731263918077007==--

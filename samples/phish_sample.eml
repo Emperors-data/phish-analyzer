@@ -4,19 +4,19 @@ Reply-To: helpdesk@mail-collector.example.net
 Subject: URGENT: Your account is suspended - verify immediately
 Authentication-Results: mx.example.com; spf=fail; dkim=fail; dmarc=fail
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8773708441676730964=="
+Content-Type: multipart/mixed; boundary="===============2800929662095960779=="
 
---===============8773708441676730964==
+--===============2800929662095960779==
 Content-Type: multipart/alternative;
- boundary="===============4780545232556324965=="
+ boundary="===============7494067089503705304=="
 
---===============4780545232556324965==
+--===============7494067089503705304==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 
 Verify your account: http://203.0.113.45/login
 
---===============4780545232556324965==
+--===============7494067089503705304==
 Content-Type: text/html; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
@@ -24,9 +24,9 @@ MIME-Version: 1.0
 <p>Dear user,</p><p>Please <a href=3D'http://bit.ly/3xAmple'>https://www.payp=
 al.com/verify</a> now.</p>
 
---===============4780545232556324965==--
+--===============7494067089503705304==--
 
---===============8773708441676730964==
+--===============2800929662095960779==
 Content-Type: application/octet-stream
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="invoice.pdf.exe"
@@ -35,4 +35,4 @@ MIME-Version: 1.0
 TVoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAA
 
---===============8773708441676730964==--
+--===============2800929662095960779==--

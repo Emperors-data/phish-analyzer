@@ -24,4 +24,13 @@ good['Authentication-Results'] = 'mx.example.com; spf=pass; dkim=pass; dmarc=pas
 good.set_content('Here is our weekly update. Read more at https://example.com/blog')
 Path('samples/clean_sample.eml').write_bytes(good.as_bytes())
 
+# 3. Disguised executable
+disguised = EmailMessage()
+disguised['From'] = 'Accounts <accounts@example.com>'
+disguised['To'] = 'you@example.com'
+disguised['Subject'] = 'Invoice attached'
+disguised.set_content('Please see the attached invoice.')
+disguised.add_attachment(b'MZ' + bytes(64), maintype='application', subtype='pdf', filename='invoice.pdf')
+Path('samples/disguised_sample.eml').write_bytes(disguised.as_bytes())
+
 print('Samples created in samples/')
