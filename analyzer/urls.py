@@ -1,34 +1,37 @@
 import ipaddress
 import re
 from html.parser import HTMLParser
-from urlib.parse import urlparse
+from urllib.parse import urlparse
 from analyzer.common import make_finding, defang
 
 URL_RE = re.compile(r'https?://[^\s<>"\x27]+', re.IGNORECASE)
-SHORTENERS = {'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'ow.ly', 'cutt,ly'}
+SHORTENERS = {'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'ow.ly', 'cutt.ly'}
 RISKY_TLDS = ('.top', '.xyz', '.click', '.tk', '.gq', '.ml', '.cf', '.zip')
 
+
 class LinkCollector(HTMLParser):
+    # Collects (href, visible text) for every <a> tag in HTML
     def __init__(self):
         super().__init__()
         self.links = []
         self._href = None
         self._text = []
-        
+
     def handle_starttag(self, tag, attrs):
         if tag == 'a':
             self._href = dict(attrs).get('href')
             self._text = []
-            
+
     def handle_data(self, data):
         if self._href is not None:
             self._text.append(data)
-            
+
     def handle_endtag(self, tag):
         if tag == 'a' and self._href is not None:
             self.links.append((self._href, ''.join(self._text).strip()))
             self._href = None
-         
+
+
 def extract_bodies(msg):
     plain, html = '', ''
     for part in msg.walk():
@@ -43,20 +46,27 @@ def extract_bodies(msg):
         except Exception:
             continue
     return plain, html
-    
+
+
 def is_ip(host):
     try:
         ipaddress.ip_address(host)
         return True
     except ValueError:
         return False
-        
+
+
 def host_of(url):
+    host = (urlparse(url).hostname or '').lower()
+    return host[4:] if host.startswith('www.') else host
+
+
+def check_url(url):
     findings = []
     parsed = urlparse(url)
     host = (parsed.hostname or '').lower()
     safe = defang(url)
-    
+
     if is_ip(host):
         findings.append(make_finding('url', 20, f'Link uses a raw IP address: {safe}'))
     if host in SHORTENERS:
@@ -72,27 +82,29 @@ def host_of(url):
     if host.count('.') >= 4:
         findings.append(make_finding('url', 5, f'Unusually many subdomains: {safe}'))
     return findings
-    
+
+
 def analyze_urls(msg):
     plain, html = extract_bodies(msg)
     collector = LinkCollector()
     collector.feed(html)
-    
+
     found = {u.rstrip('.,;:)') for u in URL_RE.findall(plain + ' ' + html)}
     found |= {h for h, _ in collector.links if h and h.startswith(('http://', 'https://'))}
-    
+
     findings = []
     for url in sorted(found):
         try:
             findings += check_url(url)
         except ValueError:
             continue
-            
+
+    # Link text says one place, link goes somewhere else
     for href, text in collector.links:
         if href and text.lower().startswith(('http://', 'https://', 'www.')) and href.startswith('http'):
-           shown = text if '://' in text else 'http://' + text
-           if host_of(shown) != host_of(href):
-              findings.append(make_finding('url', 25,
-                  f'Link text shows {defang(text)} but goes to {defang(href)}'))
-               
-    return findings, sorted(found)        
+            shown = text if '://' in text else 'http://' + text
+            if host_of(shown) != host_of(href):
+                findings.append(make_finding('url', 25,
+                    f'Link text shows {defang(text)} but goes to {defang(href)}'))
+
+    return findings, sorted(found)
