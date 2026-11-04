@@ -2,12 +2,18 @@ from email import policy
 from email.parser import BytesParser
 from email.utils import parseaddr
 from analyzer.common import make_finding
+import unicodedata
+
+LOOKALIKE_SCRIPTS = {'CYRILLIC', 'GREEK'}
 
 BRANDS = ['paypal', 'microsoft', 'amazon', 'apple', 'google',
           'netflix', 'sbi', 'hdfc', 'icici']
 URGENT_WORDS = ['urgent', 'immediately', 'suspended', 'verify',
                 'action required', 'password', 'final notice']
 
+def has_lookalike_letters(text):
+    scripts = {unicodedata.name(c, '').split(' ')[0] for c in text if c.isalpha()}
+    return 'LATIN' in scripts and bool(scripts & LOOKALIKE_SCRIPTS)
 
 def load_email(path):
     with open(path, 'rb') as f:
@@ -57,5 +63,13 @@ def analyze_headers(msg):
     if hits:
         findings.append(make_finding('header', 10,
             f'Urgency language in subject: {hits}'))
+            
+    if has_lookalike_letters(display_name):
+        findings.append(make_finding('header', 25,
+            'Display name mixes Latin letters with lookalike Cyrillic or Greek letters'))
+    for label, domain in (('From', from_domain), ('Reply-To', reply_domain), ('Return-Path', path_domain)):
+        if domain and '.' not in domain:
+            findings.append(make_finding('header', 20,
+                f'{label} domain has no top-level domain: {domain}'))
 
     return findings
