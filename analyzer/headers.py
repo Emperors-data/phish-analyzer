@@ -1,7 +1,7 @@
 from email import policy
 from email.parser import BytesParser
 from email.utils import parseaddr
-from analyzer.common import make_finding
+from analyzer.common import make_finding, related
 import unicodedata
 
 LOOKALIKE_SCRIPTS = {'CYRILLIC', 'GREEK'}
@@ -61,7 +61,8 @@ def analyze_headers(msg):
 
     hits = [w for w in URGENT_WORDS if w in subject]
     if hits:
-        findings.append(make_finding('header', 10,
+        points = 10 if len(hits) >= 2 else 5
+        findings.append(make_finding('header', points,
             f'Urgency language in subject: {hits}'))
             
     if has_lookalike_letters(display_name):

@@ -2,7 +2,7 @@ import ipaddress
 import re
 from html.parser import HTMLParser
 from urllib.parse import urlparse
-from analyzer.common import make_finding, defang
+from analyzer.common import make_finding, defang, related
 
 URL_RE = re.compile(r'https?://[^\s<>"\x27]+', re.IGNORECASE)
 SHORTENERS = {'bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'ow.ly', 'cutt.ly'}
@@ -89,7 +89,7 @@ def analyze_urls(msg):
     collector = LinkCollector()
     collector.feed(html)
 
-    found = {u.rstrip('.,;:)') for u in URL_RE.findall(plain + ' ' + html)}
+    found = {u.rstrip('.,;:)') for u in URL_RE.findall(plain)}
     found |= {h for h, _ in collector.links if h and h.startswith(('http://', 'https://'))}
 
     findings = []
@@ -103,8 +103,13 @@ def analyze_urls(msg):
     for href, text in collector.links:
         if href and text.lower().startswith(('http://', 'https://', 'www.')) and href.startswith('http'):
             shown = text if '://' in text else 'http://' + text
-            if host_of(shown) != host_of(href):
+            if not related(host_of(shown), host_of(href)):
                 findings.append(make_finding('url', 25,
                     f'Link text shows {defang(text)} but goes to {defang(href)}'))
+                    
+    unique = {}
+    for f in findings:
+        unique.setdefault(f['message'].split(':')[0], f)
+    findings = list(unique.values())
 
     return findings, sorted(found)
