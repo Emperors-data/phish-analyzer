@@ -182,3 +182,20 @@ Verdict: LOW RISK - no strong indicators
 - Testing showed me the difference between what a rule checks and what I assumed it checked. For example, the risky-TLD rule only looks at links in the body, not the sender's domain, and the disguised-file check only fires when a file's name does not match its content. I listed these gaps as limitations.
 - Debugging taught me to read tracebacks from the bottom up. For example, I misspelled `urllib` as `urlib`, and `py_compile` did not catch it because it only checks syntax, not whether imports exist. After that I started importing every module in one command to check them. I also learned to run pytest from the project root so Python can find the `analyzer` package.
 - Next I want to add lookalike-domain detection and threat-intelligence lookups for hashes.
+
+## Testing on real samples
+I tested in an isolated VM on 600 emails from the public phishing_pot collection and on 29
+legitimate emails from my own inbox.
+
+My first version flagged 12 of 29 legitimate emails at score 30 or above, caused by XML namespace
+URLs, image URLs, repeated tracking links and related sender domains. After fixing URL extraction,
+adding related-domain matching and counting each URL finding once per email, it flagged 6 of 29
+and none reached HIGH RISK.
+
+On 500 phishing emails the rules had not been built from, 42% scored 30 or above and 3% scored 60
+or above. The HIGH RISK tier was much weaker on unseen emails than on the first 100 (3% vs 9%),
+because I wrote the missing-TLD and lookalike-letter rules after reading emails from that batch.
+
+Limitations: at the SUSPICIOUS threshold the tool flags 42% of phishing and 21% of legitimate mail,
+so it is a triage aid that explains its findings, not a filter. The legitimate set is small and from
+one inbox, and the phishing set is dominated by a few campaigns.
